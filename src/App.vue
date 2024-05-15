@@ -31,7 +31,9 @@ a {
 a:hover {
    opacity: 0.8;
 }
-
+li {
+   list-style: none;
+}
 .mb-5 {
    margin-bottom: 5px;
 }
@@ -40,5 +42,6 @@ a:hover {
    max-width: 1920px;
    padding: 0 20px;
    width: 100%;
+   margin: 0 auto;
 }
 </style>

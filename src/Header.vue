@@ -13,7 +13,7 @@
                   <a href="#"> дет мир(react)</a>
                </li>
                <li>
-                  <a href="#"> Источник Api</a>
+                  <a href="https://rickandmortyapi.com/"> Источник Api</a>
                </li>
             </ul>
          </nav>
@@ -41,10 +41,8 @@ export default {
 
 </script>
 
-<style>
-li {
-   list-style: none;
-}
+<style scoped>
+
 
 h1 {
    font-family: sans-serif;

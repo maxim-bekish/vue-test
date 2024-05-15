@@ -1,27 +1,10 @@
 <template>
    <main class="container">
-      <section class="sort">
-         <form>
-            <div>
-               <label for="selectName">sort Name</label>
-               <select name="" id="selectName">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-               </select>
-            </div>
-            <div>
-               <label for="selectStatus">sort Status</label>
-               <select name="" id="selectStatus">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-               </select>
-            </div>
-         </form>
-      </section>
-      <section class="cards">
-         <div v-for="(item, index) in data.results" :key="index" class="card">
+      <Sort @update-sort="handleSortUpdate" />
+      <Pagination v-if="characters.results.length" :characters="characters" :loadPreviousPage="loadPreviousPage"
+         :loadNextPage="loadNextPage" :loadStepPage="loadStepPage" :displayedPagination="displayedPagination" />
+      <section v-if="characters.results.length" class="cards">
+         <div v-for="(item, index) in characters.results" :key="index" class="card">
             <div class="card-img">
                <img :src="item.image" alt="img">
             </div>
@@ -48,53 +31,103 @@
             </div>
          </div>
       </section>
-      <section class="pagination">
-         <button type="button">
-            <a :href="data.info.prev">prev</a>
-         </button>
-         <ul>
-            <!--<li v-for="(item, index) in numberOfPages" :key="index"></li>-->
-         </ul>
-         <button type="button">
-            <a :href="data.info.next">next</a>
-         </button>
-      </section>
    </main>
 </template>
 
 <script>
-import { useQuery } from '@tanstack/vue-query';
+import Pagination from './Pagination.vue'
+import Sort from './Sort.vue'
+import { reactive, computed } from 'vue'
 
 export default {
+   components: {
+      Pagination, Sort
+   },
    setup() {
-      const { isPending, isFetching, isError, data, error } = useQuery({
-         queryKey: ['todos'],
-         queryFn: fetchCharacters,
+      const maxDisplayed = 5; // Максимальное количество отображаемых страниц
+      const characters = reactive({
+         stepsPagination: [],
+         results: [],
+         info: {},
+         currentPage: 1,
       });
-
-      async function fetchCharacters() {
+      async function fetchCharacters(url) {
          try {
-            const response = await fetch('https://rickandmortyapi.com/api/character');
+            const response = await fetch(url);
             const data = await response.json();
-            
-            return data; // Возвращаем только массив с персонажами
+            characters.results = data.results;
+            characters.info = data.info;
+            characters.stepsPagination = [];
+            for (let i = 1; i <= data.info.pages; i++) {
+               characters.stepsPagination.push(i);
+            }
+            return data;
          } catch (error) {
             throw new Error('Failed to fetch characters');
          }
       }
+      fetchCharacters('https://rickandmortyapi.com/api/character')
+      const displayedPagination = computed(() => {
+         let startPage = Math.max(characters.currentPage - Math.floor(maxDisplayed / 2), 1);
+         let endPage = Math.min(startPage + maxDisplayed - 1, characters.info.pages);
 
-      return { isPending, isFetching, isError, data, error };
+         if (endPage - startPage + 1 < maxDisplayed) {
+            startPage = Math.max(endPage - maxDisplayed + 1, 1);
+         }
+
+         return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+      });
+      async function loadNextPage() {
+         if (characters.info.next != null) {
+            characters.currentPage += 1
+            const newCharacters = await fetchCharacters(characters.info.next);
+            characters.results = newCharacters.results;
+            characters.info = newCharacters.info;
+         }
+      }
+      async function loadPreviousPage() {
+         if (characters.info.prev != null) {
+            characters.currentPage -= 1
+            const newCharacters = await fetchCharacters(characters.info.prev);
+            characters.results = newCharacters.results;
+            characters.info = newCharacters.info;
+         }
+      }
+      async function loadStepPage(page) {
+         characters.currentPage = page;
+         const newCharacters = await fetchCharacters(`https://rickandmortyapi.com/api/character?page=${page}`);
+         characters.results = newCharacters.results;
+         characters.info = newCharacters.info;
+      }
+      async function handleSortUpdate(sortData) {
+         console.log(sortData);
+         const newCharacters = await fetchCharacters(
+            `https://rickandmortyapi.com/api/character/?page=1&name=${sortData.sortName}&status=${sortData.sortStatus}`
+         );
+         characters.results = newCharacters.results;
+         characters.info = newCharacters.info;
+      }
+      return {
+         handleSortUpdate,
+         characters,
+         loadNextPage,
+         loadPreviousPage,
+         loadStepPage,
+         displayedPagination
+      };
    },
 };
 
 </script>
 
-<style>
+<style scoped>
 main {
+   padding: 20px 0;
    background-color: rgb(39, 43, 51);
 }
 
 .cards {
+   margin: 30px 0;
    display: flex;
    gap: 20px;
    flex-direction: row;

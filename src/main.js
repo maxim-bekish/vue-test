@@ -7,7 +7,7 @@ const router = createRouter({
    history: createWebHistory(),
    routes: [
       { path: '/', redirect: '/page/false/1' },
-      { name: 'Page', path: '/page/:sort/:page(\\d+)', component: import('./MainApp') },
+      { name: 'Page', path: '/page/:sort/:page(\\d+)', component: import('./MainApp.vue') },
    ]
 })
 

@@ -6,8 +6,9 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 const router = createRouter({
    history: createWebHistory(),
    routes: [
-      { path: '/', redirect: '/page/1' },
-      { name: 'Page', path: '/page/:id(\\d+)', component: import('./Main') },
+      { path: '/', redirect: '/page/false/1' },
+      { name: 'Page', path: '/page/:sort/:page(\\d+)', component: import('./MainApp') },
+
    ]
 })
 

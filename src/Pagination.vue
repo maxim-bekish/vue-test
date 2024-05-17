@@ -5,26 +5,41 @@
          <li v-for="page in displayedPagination" :key="page" v-if="characters.stepsPagination.length"
             :class="{ 'active-paging': page === characters.currentPage }">
 
-            <RouterLink :to="`/page/${page}`" @click="loadStepPage(page)">
+            <RouterLink :to="{
+               path: `/page/${route.params.sort}/${page}`,
+               query: {
+                  sortStatus: route.query.sortStatus,
+                  sortName: route.query.sortName
+               }
+            }">
                {{ page }}
             </RouterLink>
          </li>
       </ul>
-      <button @click="loadNextPage" type="button"> next </button>
+      <button @click="loadNextPage" type="button">
+
+         next
+
+      </button>
    </section>
 </template>
 
+
+
+
+
 <script setup>
-
+import { useRoute, useRouter } from 'vue-router';
 import { defineProps } from 'vue'
-
+const route = useRoute();
+console.log(route)
 const props = defineProps({
    characters: Object,
    loadPreviousPage: Function,
    loadNextPage: Function,
-   loadStepPage: Function,
    displayedPagination: Array
 })
+
 </script>
 
 <style scoped>

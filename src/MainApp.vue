@@ -1,107 +1,86 @@
 <template>
-   <main class="container">
-      <Sort />
-      <Pagination v-if="characters.results.length" :characters="characters" />
-      <Cards v-if="characters.results.length" :characters="characters.results" />
-   </main>
+   <div class="background">
+      <main class="container">
+         <div v-if="error">Error: {{ error.message }}</div>
+         <div style="color: brown;" v-if="isLoading">Loading...</div>
+         <Sort />
+         <Pagination v-if="characters.results.length" :characters="characters" />
+         <Cards v-if="characters.results.length" :characters="characters.results" />
+         <Pagination v-if="characters.results.length" :characters="characters" />
+      </main>
+   </div>
 </template>
 
 <script setup>
-
 import Pagination from './Pagination.vue'
 import Sort from './Sort.vue'
 import Cards from './Cards.vue'
 import { reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import { URL_DEFAULT } from './constants'
+import { useQuery } from '@tanstack/vue-query';
 
 const router = useRouter()
 const route = useRoute();
-
-watch(route, () => {
-   handleSortUpdate({
-      sortStatus: route.query.sortStatus,
-      sortName: route.query.sortName,
-   }, {
-      page: Number(route.params.page),
-      sort: JSON.parse(route.params.sort)
-   });
-
-});
 
 const characters = reactive({
    stepsPagination: [],
    results: [],
    info: {},
    currentPage: 1,
-   error: {
-      status: false,
-      message: ''
-   },
+});
+const { data, isLoading, error, refetch } = useQuery({
+   queryKey: ['characters', route.query.sortStatus, route.query.sortName, route.params.page],
+   queryFn: () => fetchCharacters(`${URL_DEFAULT}?page=${route.params.page}${route.query.sortName ? `&name=${route.query.sortName}` : ''}${route.query.sortStatus ? `&status=${route.query.sortStatus}` : ''}`),
+});
+
+watch(route, () => {
+   refetch()
+
+});
+watch(data, () => {
+   const content = data.value;
+   if (!content.error) {
+      characters.results = content.results || [];
+      characters.info = content.info || {};
+      characters.stepsPagination = [];
+      if (content.info && content.info.pages) {
+         for (let i = 1; i <= content.info.pages; i++) {
+            characters.stepsPagination.push(i);
+         }
+
+      }
+   } else {
+      alert('Не коректное имя')
+      router.push({
+         path: `/`,
+         query: {}
+      })
+   }
 });
 async function fetchCharacters(url) {
    characters.currentPage = Number(route.params.page)
    try {
       const response = await fetch(url);
       const data = await response.json();
-      characters.error.status = data.error ? true : false;
-      characters.error.message = data.error || '';
-      if (!characters.error.status) {
-         characters.results = data.results;
-         characters.info = data.info;
-         characters.stepsPagination = [];
-      }
-      for (let i = 1; i <= data.info.pages; i++) {
-         characters.stepsPagination.push(i);
-      }
       return data;
    } catch (error) {
-      console.error('Ошибочка: ' + characters.error.message);
-      alert(`Ошибочка: "${characters.error.message}." \nКрч, нет таких имен "${route.query.sortName}", попробуй дрогое имя`)
-      router.push({
-         path: `/page/${false}/1`,
-         query: {}
-      })
-
+      console.log(error)
    }
 }
-
-async function handleSortUpdate(query, params) {
-   const PARAMS_PAGE = `?page=${params.page}`
-   const SORT_NAME = `&name=${query.sortName}`
-   const SORT_STATUS = `&status=${query.sortStatus}`
-   const URL = `${URL_DEFAULT + PARAMS_PAGE}${params.sort ? SORT_NAME + SORT_STATUS : ''}`
-
-   const newCharacters = await fetchCharacters(URL);
-   if (!characters.error.status) {
-      characters.results = newCharacters.results;
-      characters.info = newCharacters.info;
-   }
-}
-handleSortUpdate({
-   sortStatus: route.query.sortStatus,
-   sortName: route.query.sortName,
-   sort: route.query.sort
-}, {
-   page: Number(route.params.page),
-   sort: JSON.parse(route.params.sort)
-})
-
 </script>
 
 <style scoped>
 main {
-   padding: 20px 0;
-   background-color: rgb(39, 43, 51);
-}
-
-.cards {
-   margin: 30px 0;
    display: flex;
    gap: 20px;
-   flex-direction: row;
-   flex-wrap: wrap;
-   justify-content: center;
+   flex-direction: column;
+
+}
+
+.background {
+   padding: 20px 0;
+   background-color: rgb(39, 43, 51);
 }
 
 .status-life {

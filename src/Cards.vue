@@ -5,8 +5,8 @@
             <img :src="item.image" alt="img">
          </div>
          <div class="content">
-            <div class="content-name-status">
-               <h3 class="mb-5">
+            <div>
+               <h3>
                   <a href="#">{{ item.name }}</a>
                </h3>
                <div class="content-status">
@@ -16,12 +16,12 @@
                   <p>{{ item.status }} - {{ item.species }} </p>
                </div>
             </div>
-            <div class="content-last-location">
-               <span class="mb-5">Last known location:</span>
+            <div>
+               <span>Last known location:</span>
                <a href="#">{{ item.location.name }}</a>
             </div>
-            <div class="content-first-seen">
-               <span class="mb-5">First seen in:</span>
+            <div>
+               <span>First seen in:</span>
                <a href="#">{{ item.origin.name }}</a>
             </div>
          </div>
@@ -30,20 +30,14 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
+
 const props = defineProps({
    characters: Object,
 })
 </script>
 
 <style scoped>
-main {
-   padding: 20px 0;
-   background-color: rgb(39, 43, 51);
-}
-
 .cards {
-   margin: 30px 0;
    display: flex;
    gap: 20px;
    flex-direction: row;
@@ -108,8 +102,6 @@ main {
    flex-direction: column;
    justify-content: space-between;
 }
-
-
 
 h3 a {
    font-size: 1.5rem;

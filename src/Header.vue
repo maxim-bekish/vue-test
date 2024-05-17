@@ -1,6 +1,6 @@
 <template>
    <header>
-      <section class="header-up">
+      <section class="container header-up">
          <a href="/">
             <img :src="logo" alt="Логотип">
          </a>
@@ -47,6 +47,7 @@ h1 {
 }
 
 .header-up {
+   
    padding: 20px;
    display: flex;
    align-items: center;

@@ -1,19 +1,12 @@
 <template>
    <Header />
-   <RouterView/>
+   <RouterView />
    <Footer />
-
 </template>
 
-<script>
+<script setup>
 import Header from './Header.vue'
 import Footer from './Footer.vue'
-export default {
-   components: {
-      Header, 
-      Footer, 
-   },
-}
 </script>
 
 <style>
@@ -23,6 +16,10 @@ export default {
    box-sizing: border-box;
 }
 
+button {
+   cursor: pointer;
+}
+
 a {
    text-decoration: none;
 }
@@ -30,9 +27,11 @@ a {
 a:hover {
    opacity: 0.8;
 }
+
 li {
    list-style: none;
 }
+
 .mb-5 {
    margin-bottom: 5px;
 }

@@ -21,7 +21,7 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
-import { defineProps, computed } from 'vue';
+import { computed } from 'vue';
 import { maxDisplayed } from './constants'
 
 const route = useRoute();
@@ -61,13 +61,15 @@ function handlePageNavigation(event) {
    display: flex;
    justify-content: center;
    align-items: center;
-   margin-top: 10px;
+   height: 35px;
+
 }
 
 .pagination ul {
    gap: 5px;
-   padding: 0 10px;
+   padding: 0 20px;
    display: flex;
+   height: 100%;
 }
 
 .pagination button a {
@@ -75,10 +77,11 @@ function handlePageNavigation(event) {
 }
 
 .pagination button {
+   height: 100%;
    border-radius: 5px;
    border: 0;
    outline: 0;
-   padding: 5px 10px;
+   padding: 0 10px;
    background-color: #6e6e6e;
    color: white;
    font-family: sans-serif;
@@ -90,11 +93,13 @@ function handlePageNavigation(event) {
    cursor: pointer;
    border-radius: 5px;
    border: 1px solid white;
-
 }
 
 .pagination ul li a {
-   padding: 5px 10px;
+   height: 100%;
+   display: flex;
+   align-items: center;
+   padding: 0 10px;
    color: white;
    font-size: 20px;
    font-family: sans-serif;

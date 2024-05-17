@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
+import { VueQueryPlugin } from '@tanstack/vue-query'
 import App from './App'
 
 const router = createRouter({
@@ -8,12 +8,10 @@ const router = createRouter({
    routes: [
       { path: '/', redirect: '/page/false/1' },
       { name: 'Page', path: '/page/:sort/:page(\\d+)', component: import('./MainApp') },
-
    ]
 })
 
-const pinia = createPinia()
 const app = createApp(App)
-app.use(pinia)
+app.use(VueQueryPlugin)
 app.use(router)
 app.mount('#app')

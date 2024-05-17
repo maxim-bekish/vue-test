@@ -20,14 +20,40 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
-import { defineProps } from 'vue'
+import { useRoute, useRouter } from 'vue-router';
+import { defineProps, computed } from 'vue';
+import { maxDisplayed } from './constants'
+
 const route = useRoute();
+const router = useRouter()
 const props = defineProps({
    characters: Object,
-   handlePageNavigation: Function,
-   displayedPagination: Array
 })
+
+const displayedPagination = computed(() => {
+   let startPage = Math.max(props.characters.currentPage - Math.floor(maxDisplayed / 2), 1);
+   let endPage = Math.min(startPage + maxDisplayed - 1, props.characters.info.pages);
+   if (endPage - startPage + 1 < maxDisplayed) {
+      startPage = Math.max(endPage - maxDisplayed + 1, 1);
+   }
+   return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+})
+function handlePageNavigation(event) {
+   switch (event) {
+      case "Prev":
+         if (props.characters.currentPage === 1) return 1
+         props.characters.currentPage -= 1
+         break;
+      case "Next":
+         if (props.characters.currentPage === props.characters.info.pages) return props.characters.info.pages
+         props.characters.currentPage += 1
+         break;
+   }
+   router.push({
+      path: `/page/${route.params.sort}/${props.characters.currentPage}`,
+      query: route.query
+   })
+}
 </script>
 
 <style scoped>

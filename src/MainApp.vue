@@ -1,8 +1,7 @@
 <template>
    <main class="container">
       <Sort />
-      <Pagination v-if="characters.results.length" :characters="characters" :handlePageNavigation="handlePageNavigation"
-         :displayedPagination="displayedPagination" />
+      <Pagination v-if="characters.results.length" :characters="characters" />
       <Cards v-if="characters.results.length" :characters="characters.results" />
    </main>
 </template>
@@ -12,9 +11,9 @@
 import Pagination from './Pagination.vue'
 import Sort from './Sort.vue'
 import Cards from './Cards.vue'
-import { reactive, computed, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
-
+import { URL_DEFAULT } from './constants'
 
 const router = useRouter()
 const route = useRoute();
@@ -66,33 +65,8 @@ async function fetchCharacters(url) {
 
    }
 }
-const displayedPagination = computed(() => {
-   const maxDisplayed = 5; // Максимальное количество отображаемых страниц
-   let startPage = Math.max(characters.currentPage - Math.floor(maxDisplayed / 2), 1);
-   let endPage = Math.min(startPage + maxDisplayed - 1, characters.info.pages);
-   if (endPage - startPage + 1 < maxDisplayed) {
-      startPage = Math.max(endPage - maxDisplayed + 1, 1);
-   }
-   return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-});
-function handlePageNavigation(event) {
-   switch (event) {
-      case "Prev":
-         if (characters.currentPage === 1) return 1
-         characters.currentPage -= 1
-         break;
-      case "Next":
-         if (characters.currentPage === characters.info.pages) return characters.info.pages
-         characters.currentPage += 1
-         break;
-   }
-   router.push({
-      path: `/page/${route.params.sort}/${characters.currentPage}`,
-      query: route.query
-   })
-}
+
 async function handleSortUpdate(query, params) {
-   const URL_DEFAULT = `https://rickandmortyapi.com/api/character`
    const PARAMS_PAGE = `?page=${params.page}`
    const SORT_NAME = `&name=${query.sortName}`
    const SORT_STATUS = `&status=${query.sortStatus}`

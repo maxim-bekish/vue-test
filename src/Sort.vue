@@ -3,7 +3,7 @@
       <form id="formSort" class="sort">
          <div>
             <label for="selectName">Sort Name</label>
-            <input @input="valid(sortName)" v-model="www.sortName" id="selectName" type="text">
+            <input @input="valid(www.sortName)" v-model="www.sortName" id="selectName" type="text">
          </div>
          <div>
             <label for="selectStatus">Sort Status</label>
@@ -13,11 +13,10 @@
                <option value="unknown">unknown</option>
             </select>
          </div>
-
          <button @click="submit" :disabled="www.isDisabled" type="button">
             Применить
          </button>
-         <button @click="reset" :disabled="www.isDisabled" type="button">
+         <button @click="reset"  type="button">
             Сброс
          </button>
       </form>
@@ -26,17 +25,16 @@
 
 
 <script setup>
-import { reactive, ref, computed, watch, onUpdated } from 'vue'
-import { useRoute, useRouter } from 'vue-router';
-//const emit = defineEmits(['update-sort']);
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router';
 const www = reactive({
    sortStatus: 'alive',
-   sortName: 'rick',
+   sortName: '',
    isDisabled: false,
 });
 const router = useRouter()
+const emit = defineEmits(['resetInput'])
 function submit() {
-   //emit('update-sort', { sortStatus: www.sortStatus, sortName: www.sortName });
    router.push({
       path: `/page/${true}/1`,
       query: {
@@ -44,19 +42,17 @@ function submit() {
          sortName: www.sortName
       }
    })
-
 }
 function reset() {
    router.push({ path: `/page/${false}/1` })
+   www.sortName = ""
 }
 function valid(str) {
-
    if (/^[а-яА-ЯёЁ]+$/.test(str)) {
       www.isDisabled = true
    } else {
       www.isDisabled = false
    }
-
 }
 
 </script>

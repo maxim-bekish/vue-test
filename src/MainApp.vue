@@ -1,36 +1,35 @@
 <template>
    <main class="container">
       <Sort />
-      <Pagination v-if="characters.results.length" :characters="characters" :loadPreviousPage="loadPreviousPage"
-         :loadNextPage='loadNextPage' :displayedPagination="displayedPagination" />
+      <Pagination v-if="characters.results.length" :characters="characters" :handlePageNavigation="handlePageNavigation"
+         :displayedPagination="displayedPagination" />
       <Cards v-if="characters.results.length" :characters="characters.results" />
    </main>
-
 </template>
 
 <script setup>
+
 import Pagination from './Pagination.vue'
 import Sort from './Sort.vue'
 import Cards from './Cards.vue'
-import { reactive, ref, computed, watch, onUpdated } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
-const maxDisplayed = 5; // Максимальное количество отображаемых страниц
+
+
 const router = useRouter()
 const route = useRoute();
+
 watch(route, () => {
    handleSortUpdate({
       sortStatus: route.query.sortStatus,
       sortName: route.query.sortName,
-      sort: route.query.sort
    }, {
       page: Number(route.params.page),
       sort: JSON.parse(route.params.sort)
    });
 
 });
-components: {
-   Pagination, Sort, Cards
-}
+
 const characters = reactive({
    stepsPagination: [],
    results: [],
@@ -41,7 +40,7 @@ const characters = reactive({
       message: ''
    },
 });
-async function fetchCharacters(url, name = "") {
+async function fetchCharacters(url) {
    characters.currentPage = Number(route.params.page)
    try {
       const response = await fetch(url);
@@ -59,19 +58,16 @@ async function fetchCharacters(url, name = "") {
       return data;
    } catch (error) {
       console.error('Ошибочка: ' + characters.error.message);
-      alert(`Ошибочка: "${characters.error.message}." \nКрч, нет таких имен "${name}", попробуй дрогое имя`)
+      alert(`Ошибочка: "${characters.error.message}." \nКрч, нет таких имен "${route.query.sortName}", попробуй дрогое имя`)
+      router.push({
+         path: `/page/${false}/1`,
+         query: {}
+      })
+
    }
 }
-//fetchCharacters(`https://rickandmortyapi.com/api/character?page=${route.params.page}`)
-handleSortUpdate({
-      sortStatus: route.query.sortStatus,
-      sortName: route.query.sortName,
-      sort: route.query.sort
-   }, {
-      page: Number(route.params.page),
-      sort: JSON.parse(route.params.sort)
-   })
 const displayedPagination = computed(() => {
+   const maxDisplayed = 5; // Максимальное количество отображаемых страниц
    let startPage = Math.max(characters.currentPage - Math.floor(maxDisplayed / 2), 1);
    let endPage = Math.min(startPage + maxDisplayed - 1, characters.info.pages);
    if (endPage - startPage + 1 < maxDisplayed) {
@@ -79,40 +75,44 @@ const displayedPagination = computed(() => {
    }
    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 });
-function loadNextPage() {
-   //if (characters.info.next != null) {
-   //   characters.currentPage += 1
-   //   const newCharacters = await fetchCharacters(characters.info.next);
-   //   characters.results = newCharacters.results;
-   //   characters.info = newCharacters.info;
-   //}
-   if (characters.currentPage === characters.info.pages) return characters.info.pages
-   characters.currentPage += 1
-   router.push({ path: `/page/${characters.currentPage}` })
-
-}
-function loadPreviousPage() {
-   //if (characters.info.prev != null) {
-   //   characters.currentPage -= 1
-   //   const newCharacters = await fetchCharacters(characters.info.prev);
-   //   characters.results = newCharacters.results;
-   //   characters.info = newCharacters.info;
-   //}
-   if (characters.currentPage === 1) return 1
-   characters.currentPage -= 1
-   router.push({ path: `/page/${characters.currentPage}` })
+function handlePageNavigation(event) {
+   switch (event) {
+      case "Prev":
+         if (characters.currentPage === 1) return 1
+         characters.currentPage -= 1
+         break;
+      case "Next":
+         if (characters.currentPage === characters.info.pages) return characters.info.pages
+         characters.currentPage += 1
+         break;
+   }
+   router.push({
+      path: `/page/${route.params.sort}/${characters.currentPage}`,
+      query: route.query
+   })
 }
 async function handleSortUpdate(query, params) {
-   console.log(params)
-   let URL = `https://rickandmortyapi.com/api/character?page=${params.page}`
-   let URL_SORT = `https://rickandmortyapi.com/api/character/?page=${params.page}&name=${query.sortName}&status=${query.sortStatus}`
-   const newCharacters = await fetchCharacters(params.sort ? URL_SORT : URL, query.sortName
-   );
+   const URL_DEFAULT = `https://rickandmortyapi.com/api/character`
+   const PARAMS_PAGE = `?page=${params.page}`
+   const SORT_NAME = `&name=${query.sortName}`
+   const SORT_STATUS = `&status=${query.sortStatus}`
+   const URL = `${URL_DEFAULT + PARAMS_PAGE}${params.sort ? SORT_NAME + SORT_STATUS : ''}`
+
+   const newCharacters = await fetchCharacters(URL);
    if (!characters.error.status) {
       characters.results = newCharacters.results;
       characters.info = newCharacters.info;
    }
 }
+handleSortUpdate({
+   sortStatus: route.query.sortStatus,
+   sortName: route.query.sortName,
+   sort: route.query.sort
+}, {
+   page: Number(route.params.page),
+   sort: JSON.parse(route.params.sort)
+})
+
 </script>
 
 <style scoped>

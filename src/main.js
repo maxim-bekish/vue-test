@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App'
-import { VueQueryPlugin } from '@tanstack/vue-query'
 
 const router = createRouter({
    history: createWebHistory(),
@@ -12,8 +12,8 @@ const router = createRouter({
    ]
 })
 
-
+const pinia = createPinia()
 const app = createApp(App)
-   .use(VueQueryPlugin)
-   .use(router)
-   .mount('#app')
+app.use(pinia)
+app.use(router)
+app.mount('#app')

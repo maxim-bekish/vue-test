@@ -7,13 +7,13 @@
          <nav>
             <ul>
                <li>
-                  <a href="#"> site</a>
+                  <a target="_blank" href="https://cv-maxim-bekish.vercel.app/">my site</a>
                </li>
                <li>
-                  <a href="#"> дет мир(react)</a>
+                  <a target="_blank" href="https://detmir.vercel.app/"> дет мир(react)</a>
                </li>
                <li>
-                  <a href="https://rickandmortyapi.com/"> Источник Api</a>
+                  <a target="_blank" href="https://rickandmortyapi.com/"> Источник Api</a>
                </li>
             </ul>
          </nav>
@@ -25,12 +25,13 @@
          </div>
       </div>
    </header>
-
 </template>
 
 <script setup>
+
 import logo from './../public/assets/logo.svg'
 import background from './../public/assets/background.svg'
+
 </script>
 
 <style scoped>

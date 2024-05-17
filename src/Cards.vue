@@ -1,5 +1,4 @@
 <template>
-
    <section class="cards">
       <div v-for="(item, index) in characters" :key="index" class="card">
          <div class="card-img">
@@ -28,19 +27,13 @@
          </div>
       </div>
    </section>
-
-
 </template>
 
 <script setup>
-
 import { defineProps } from 'vue'
-
 const props = defineProps({
    characters: Object,
 })
-
-
 </script>
 
 <style scoped>

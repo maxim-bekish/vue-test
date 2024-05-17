@@ -2,20 +2,29 @@
    <section v-if="characters.results.length" class="pagination">
       <button @click="loadPreviousPage" type="button"> prev </button>
       <ul>
-         <li v-if="characters.stepsPagination.length" @click="loadStepPage(page)" v-for="page in displayedPagination"
-            :key="page" :class="{ 'active-paging': page === characters.currentPage }">
-            {{ page }}
+         <li v-for="page in displayedPagination" :key="page" v-if="characters.stepsPagination.length"
+            :class="{ 'active-paging': page === characters.currentPage }">
+
+            <RouterLink :to="`/page/${page}`" @click="loadStepPage(page)">
+               {{ page }}
+            </RouterLink>
          </li>
       </ul>
       <button @click="loadNextPage" type="button"> next </button>
    </section>
 </template>
 
-<script>
-export default {
-   props: ['characters', 'loadPreviousPage', 'loadNextPage', 'loadStepPage', 'displayedPagination'],
-};
+<script setup>
 
+import { defineProps } from 'vue'
+
+const props = defineProps({
+   characters: Object,
+   loadPreviousPage: Function,
+   loadNextPage: Function,
+   loadStepPage: Function,
+   displayedPagination: Array
+})
 </script>
 
 <style scoped>
@@ -50,13 +59,17 @@ export default {
 
 .pagination ul li {
    cursor: pointer;
+   border-radius: 5px;
+   border: 1px solid white;
+
+}
+
+.pagination ul li a {
+   padding: 5px 10px;
    color: white;
    font-size: 20px;
    font-family: sans-serif;
-   padding: 5px 10px;
    line-height: 20px;
-   border-radius: 5px;
-   border: 1px solid white;
 }
 
 .pagination ul .active-paging {

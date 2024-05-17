@@ -3,120 +3,97 @@
       <Sort @update-sort="handleSortUpdate" />
       <Pagination v-if="characters.results.length" :characters="characters" :loadPreviousPage="loadPreviousPage"
          :loadNextPage="loadNextPage" :loadStepPage="loadStepPage" :displayedPagination="displayedPagination" />
-      <section v-if="characters.results.length" class="cards">
-         <div v-for="(item, index) in characters.results" :key="index" class="card">
-            <div class="card-img">
-               <img :src="item.image" alt="img">
-            </div>
-            <div class="content">
-               <div class="content-name-status">
-                  <h3 class="mb-5">
-                     <a href="#">{{ item.name }}</a>
-                  </h3>
-                  <div class="content-status">
-                     <div class="status-life"
-                        :class="{ red: item.status === 'Dead', green: item.status === 'Alive', black: item.status === 'unknown' }">
-                     </div>
-                     <p>{{ item.status }} - {{ item.species }} </p>
-                  </div>
-               </div>
-               <div class="content-last-location">
-                  <span class="mb-5">Last known location:</span>
-                  <a href="#">{{ item.location.name }}</a>
-               </div>
-               <div class="content-first-seen">
-                  <span class="mb-5">First seen in:</span>
-                  <a href="#">{{ item.origin.name }}</a>
-               </div>
-            </div>
-         </div>
-      </section>
+      <Cards v-if="characters.results.length" :characters="characters.results" />
    </main>
+
 </template>
 
-<script>
+<script setup>
 import Pagination from './Pagination.vue'
 import Sort from './Sort.vue'
+import Cards from './Cards.vue'
 import { reactive, computed } from 'vue'
+const maxDisplayed = 5; // Максимальное количество отображаемых страниц
 
-export default {
-   components: {
-      Pagination, Sort
+
+components: {
+   Pagination, Sort, Cards
+}
+const characters = reactive({
+   stepsPagination: [],
+   results: [],
+   info: {},
+   currentPage: 1,
+   error: {
+      status: false,
+      message: ''
    },
-   setup() {
-      const maxDisplayed = 5; // Максимальное количество отображаемых страниц
-      const characters = reactive({
-         stepsPagination: [],
-         results: [],
-         info: {},
-         currentPage: 1,
-      });
-      async function fetchCharacters(url) {
-         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            characters.results = data.results;
-            characters.info = data.info;
-            characters.stepsPagination = [];
-            for (let i = 1; i <= data.info.pages; i++) {
-               characters.stepsPagination.push(i);
-            }
-            return data;
-         } catch (error) {
-            throw new Error('Failed to fetch characters');
-         }
+});
+async function fetchCharacters(url, name) {
+   try {
+      const response = await fetch(url);
+      const data = await response.json();
+      characters.error.status = data.error ? true : false;
+      characters.error.message = data.error || '';
+      if (!characters.error.status) {
+         characters.results = data.results;
+         characters.info = data.info;
+         characters.stepsPagination = [];
       }
-      fetchCharacters('https://rickandmortyapi.com/api/character')
-      const displayedPagination = computed(() => {
-         let startPage = Math.max(characters.currentPage - Math.floor(maxDisplayed / 2), 1);
-         let endPage = Math.min(startPage + maxDisplayed - 1, characters.info.pages);
+      for (let i = 1; i <= data.info.pages; i++) {
+         characters.stepsPagination.push(i);
+      }
+      return data;
+   } catch (error) {
+      console.error('Ошибочка: ' + characters.error.message);
+      alert(`Ошибочка: "${characters.error.message}." \nКрч, нет таких имен "${name}", попробуй дрогое имя`)
+   }
+}
+fetchCharacters('https://rickandmortyapi.com/api/character')
+const displayedPagination = computed(() => {
+   let startPage = Math.max(characters.currentPage - Math.floor(maxDisplayed / 2), 1);
+   let endPage = Math.min(startPage + maxDisplayed - 1, characters.info.pages);
+   if (endPage - startPage + 1 < maxDisplayed) {
+      startPage = Math.max(endPage - maxDisplayed + 1, 1);
+   }
+   return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+});
+async function loadNextPage() {
+   if (characters.info.next != null) {
+      characters.currentPage += 1
+      const newCharacters = await fetchCharacters(characters.info.next);
+      characters.results = newCharacters.results;
+      characters.info = newCharacters.info;
+   }
+}
+async function loadPreviousPage() {
+   if (characters.info.prev != null) {
+      characters.currentPage -= 1
+      const newCharacters = await fetchCharacters(characters.info.prev);
+      characters.results = newCharacters.results;
+      characters.info = newCharacters.info;
+   }
+}
+const currentPage = computed(() => parseInt(route.params.page) || 1);
+console.log(currentPage)
 
-         if (endPage - startPage + 1 < maxDisplayed) {
-            startPage = Math.max(endPage - maxDisplayed + 1, 1);
-         }
+async function loadStepPage(page) {
+   characters.currentPage = page;
+   const newCharacters = await fetchCharacters(`https://rickandmortyapi.com/api/character?page=${page}`);
+   characters.results = newCharacters.results;
+   characters.info = newCharacters.info;
+}
+async function handleSortUpdate(sortData) {
+   const newCharacters = await fetchCharacters(
+      `https://rickandmortyapi.com/api/character/?page=1&name=${sortData.sortName}&status=${sortData.sortStatus}`, sortData.sortName
+   );
+   if (!characters.error.status) {
+      characters.results = newCharacters.results;
+      characters.info = newCharacters.info;
+   }
+}
 
-         return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-      });
-      async function loadNextPage() {
-         if (characters.info.next != null) {
-            characters.currentPage += 1
-            const newCharacters = await fetchCharacters(characters.info.next);
-            characters.results = newCharacters.results;
-            characters.info = newCharacters.info;
-         }
-      }
-      async function loadPreviousPage() {
-         if (characters.info.prev != null) {
-            characters.currentPage -= 1
-            const newCharacters = await fetchCharacters(characters.info.prev);
-            characters.results = newCharacters.results;
-            characters.info = newCharacters.info;
-         }
-      }
-      async function loadStepPage(page) {
-         characters.currentPage = page;
-         const newCharacters = await fetchCharacters(`https://rickandmortyapi.com/api/character?page=${page}`);
-         characters.results = newCharacters.results;
-         characters.info = newCharacters.info;
-      }
-      async function handleSortUpdate(sortData) {
-         console.log(sortData);
-         const newCharacters = await fetchCharacters(
-            `https://rickandmortyapi.com/api/character/?page=1&name=${sortData.sortName}&status=${sortData.sortStatus}`
-         );
-         characters.results = newCharacters.results;
-         characters.info = newCharacters.info;
-      }
-      return {
-         handleSortUpdate,
-         characters,
-         loadNextPage,
-         loadPreviousPage,
-         loadStepPage,
-         displayedPagination
-      };
-   },
-};
+2
 
 </script>
 

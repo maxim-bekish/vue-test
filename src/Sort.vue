@@ -3,7 +3,7 @@
       <form id="formSort" class="sort">
          <div>
             <label for="selectName">Sort Name</label>
-            <input v-model="sortName" id="selectName" type="text">
+            <input @input="valid(sortName)" v-model="sortName" id="selectName" type="text">
          </div>
          <div>
             <label for="selectStatus">Sort Status</label>
@@ -13,7 +13,7 @@
                <option value="unknown">unknown</option>
             </select>
          </div>
-         <button @click="submit" type="button">Применить</button>
+         <button @click="submit" :disabled="isDisabled" type="button">Применить</button>
       </form>
    </section>
 </template>
@@ -23,14 +23,24 @@
 import { ref } from 'vue';
 
 export default {
-   emits: ['update-sort'], 
-   setup(_, { emit }) { 
+   emits: ['update-sort'],
+   setup(_, { emit }) {
       let sortStatus = ref('alive');
       let sortName = ref('');
+      let isDisabled = ref('false');
       function submit() {
-         emit('update-sort', { sortStatus: sortStatus.value, sortName: sortName.value }); 
+         emit('update-sort', { sortStatus: sortStatus.value, sortName: sortName.value });
       }
-      return { sortStatus, sortName, submit }
+      function valid(str) {
+      
+         if (/^[а-яА-ЯёЁ]+$/.test(str)) {
+            isDisabled.value = true
+         } else{
+            isDisabled.value = false
+         }
+         console.log(isDisabled)
+      }
+      return { sortStatus, sortName, submit,isDisabled, valid }
    }
 }
 </script>

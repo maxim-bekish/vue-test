@@ -28,22 +28,12 @@
 
 </template>
 
-<script>
+<script setup>
 import logo from './../public/assets/logo.svg'
 import background from './../public/assets/background.svg'
-export default {
-   setup() {
-      return {
-         logo, background
-      }
-   }
-}
-
 </script>
 
 <style scoped>
-
-
 h1 {
    font-family: sans-serif;
    font-weight: 900;
